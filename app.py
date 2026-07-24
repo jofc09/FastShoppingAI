@@ -243,3 +243,82 @@ else:
 # Pie de página modular
 st.markdown("--- ")
 st.caption("© 2024 FastShopping AI - Powered by Super Intelligence")
+
+
+# =========================================================
+# PARTE 3: CATÁLOGO, TIENDAS Y CHAT INTELIGENTE (RESULTADO FINAL)
+# =========================================================
+
+# 1. CATÁLOGO DE PRODUCTOS ("Recomendado para ti")
+st.markdown("<h3 style='color: white; margin-top: 20px;'>Recomendado para ti <span style='font-size:14px; float:right; color:#7B3FF2; cursor:pointer;'>Ver todo</span></h3>", unsafe_allow_html=True)
+
+# Creamos 3 columnas para la rejilla (grid) de productos
+col1, col2, col3 = st.columns(3)
+
+productos = [
+    {"nombre": "Audífonos Inalámbricos", "precio": "RD$2,450", "rating": "★ 4.8", "img": "🎧", "col": col1},
+    {"nombre": "Smartwatch Pro 4", "precio": "RD$4,950", "rating": "★ 4.7", "img": "⌚", "col": col2},
+    {"nombre": "Mochila Urbana", "precio": "RD$1,850", "rating": "★ 4.6", "img": "🎒", "col": col3}
+]
+
+for prod in productos:
+    with prod["col"]:
+        # Renderizamos la tarjeta visual usando la clase CSS de la Parte 1
+        st.markdown(f"""
+        <div class="tarjeta-interactiva" style="text-align: center; margin-bottom: 10px;">
+            <div style="font-size: 45px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 10px;">{prod['img']}</div>
+            <h4 style="margin: 5px 0; font-size: 15px; color: white;">{prod['nombre']}</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <span style="color: #FF6A00; font-weight: bold; font-size: 14px;">{prod['precio']}</span>
+                <span style="color: #FFD700; font-size: 13px;">{prod['rating']}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Botón funcional de Streamlit que activa el sonido
+        if st.button(f"Comprar", key=f"btn_{prod['nombre']}", use_container_width=True):
+            reproducir_sonido_ui()
+            st.toast(f"¡{prod['nombre']} añadido al carrito!", icon="🛒")
+
+# 2. BANNER PROMOCIONAL INTELIGENTE (IA)
+st.markdown("""
+<div class="banner-ia" style="margin: 30px 0; display: flex; align-items: center; justify-content: space-between; text-align: left;">
+    <div>
+        <h3 style="margin:0; color:white;">Ahorra tiempo. Ahorra dinero.</h3>
+        <p style="margin:5px 0 0 0; color:#DDD; font-size: 14px;">Nosotros buscamos y comparamos por ti.</p>
+    </div>
+    <div style="font-size: 35px; background: #7B3FF2; padding: 10px 20px; border-radius: 15px; font-weight: bold; color: white; box-shadow: 0 0 20px rgba(123,63,242,0.6);">
+        AI
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# 3. TIENDAS DESTACADAS
+st.markdown("<h3 style='color: white;'>Tiendas destacadas <span style='font-size:14px; float:right; color:#7B3FF2; cursor:pointer;'>Ver todo</span></h3>", unsafe_allow_html=True)
+
+# 5 columnas para los íconos de las tiendas
+t_cols = st.columns(5)
+tiendas = [
+    {"nombre": "Amazon", "icono": "🛒", "bg": "#FF9900"},
+    {"nombre": "M. Libre", "icono": "🤝", "bg": "#FFE600"},
+    {"nombre": "Walmart", "icono": "☀", "bg": "#0071CE"},
+    {"nombre": "AliExpress", "icono": "🛍️", "bg": "#FF4747"},
+    {"nombre": "Shein", "icono": "👗", "bg": "#000000"}
+]
+
+for i, tienda in enumerate(tiendas):
+    with t_cols[i]:
+        if st.button(f"{tienda['icono']} \n {tienda['nombre']}", key=f"tienda_{i}", use_container_width=True):
+            reproducir_sonido_ui()
+            st.session_state.busqueda_ia = f"Filtrando por {tienda['nombre']}..."
+            st.rerun()
+
+# 4. SIMULACIÓN DE RESPUESTA DE CHAT IA (Si el usuario usó la barra de búsqueda en la Parte 2)
+if st.session_state.get("busqueda_ia"):
+    st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 30px 0;'>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="background: rgba(123, 63, 242, 0.15); border-left: 4px solid #7B3FF2; padding: 15px; border-radius: 8px;">
+        <span style="color: #7B3FF2; font-weight: bold;">🤖 Respuesta de FastShopping AI:</span><br>
+        <span style="color: white;">He comparado más de 15 tiendas para tu búsqueda: <b>"{st.session_state.busqueda_ia}"</b>. La mejor opción actual está en Amazon con envío gratis a República Dominicana.</span>
+    </div>
+    """, unsafe_allow_html=True)
