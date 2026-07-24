@@ -8,6 +8,127 @@ from supabase import create_client, Client
 # --- 1. CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="FastShopping AI", page_icon="🛒", layout="wide")
 
+
+# --- INTEGRACIÓN EXTRA ---
+# ==========================================
+# PARTE 2: LÓGICA DE ROLES, AUDIO Y BÚSQUEDA
+# ==========================================
+
+# 1. MOTOR DE SONIDO DE VANGUARDIA (100% Gratis - Sintetizado en navegador por Web Audio API)
+def reproducir_sonido_ui():
+    """Genera un efecto de sonido futurista 'pop/clic' sin usar archivos externos."""
+    js_sonido = """
+    <script>
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const ganancia = ctx.createGain();
+        osc.connect(ganancia);
+        ganancia.connect(ctx.destination);
+        
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // Nota D5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08); // Sube a A5 (efecto IA)
+        ganancia.gain.setValueAtTime(0.08, ctx.currentTime);
+        ganancia.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+    } catch(e) {}
+    </script>
+    """
+    st.components.v1.html(js_sonido, height=0, width=0)
+
+# 2. CONTROL DE ESTADO (Evita pérdida de datos al recargar la página)
+if 'rol_actual' not in st.session_state:
+    st.session_state.rol_actual = "Comprador 🛒"
+if 'busqueda_ia' not in st.session_state:
+    st.session_state.busqueda_ia = ""
+
+# 3. MÓDULO DE ENCABEZADO Y SELECTOR DE ROL DINÁMICO
+def renderizar_encabezado_y_rol():
+    # Contenedor centralizado para el selector de rol
+    col_vacia1, col_selector, col_vacia2 = st.columns([1, 2, 1])
+    with col_selector:
+        nuevo_rol = st.radio(
+            "Selecciona tu perfil:",
+            ["Comprador 🛒", "Repartidor 🛵"],
+            index=0 if st.session_state.rol_actual == "Comprador 🛒" else 1,
+            horizontal=True,
+            label_visibility="collapsed"
+        )
+        # Si el usuario cambia de rol, actualizamos memoria y emitimos sonido
+        if nuevo_rol != st.session_state.rol_actual:
+            st.session_state.rol_actual = nuevo_rol
+            reproducir_sonido_ui()
+            st.rerun()
+
+    # Configuración visual dinámica según el rol
+    if st.session_state.rol_actual == "Comprador 🛒":
+        subtitulo = "Compra inteligente, rápido y fácil con Inteligencia Artificial."
+        color_acento = "#FF6A00" # Naranja FastShopping
+    else:
+        subtitulo = "⚡ Portal de Reparto y Gestión de Pedidos en Tiempo Real."
+        color_acento = "#00E5FF" # Neón cian para repartidores
+
+    # Renderizado del Logo y Banner con diseño adaptativo en HTML/CSS puro
+    logo_html = f"""
+    <div style="text-align: center; margin: 10px 0 25px 0;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); padding: 8px 24px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+            <span style="font-size: 26px; margin-right: 10px;">⚡🛒</span>
+            <span style="font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.5px;">
+                FastShopping<span style="color: {color_acento};">AI</span>
+            </span>
+        </div>
+        <p style="color: #8A8F9E; font-size: 14px; margin-top: 8px; font-weight: 300;">{subtitulo}</p>
+    </div>
+    """
+    st.markdown(logo_html, unsafe_allow_html=True)
+
+# 4. MÓDULO DE BÚSQUEDA INTELIGENTE (Estilo diseño Figma)
+def renderizar_barra_busqueda_ia():
+    if st.session_state.rol_actual == "Comprador 🛒":
+        # Estilizamos el campo de texto para que tenga bordes redondos y brillo morado al escribir
+        st.markdown("""
+        <style>
+        div[data-testid="stTextInput"] input {
+            background-color: #181B26 !important;
+            border: 1px solid rgba(123, 63, 242, 0.4) !important;
+            border-radius: 30px !important;
+            padding: 12px 20px !important;
+            color: white !important;
+            font-size: 15px;
+        }
+        div[data-testid="stTextInput"] input:focus {
+            border-color: #7B3FF2 !important;
+            box-shadow: 0 0 15px rgba(123, 63, 242, 0.4) !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Grid para la barra de búsqueda y el botón de IA
+        col_input, col_boton = st.columns([5, 1])
+        with col_input:
+            query = st.text_input(
+                "Búsqueda",
+                placeholder="¿Qué producto buscas hoy? (ej. Audífonos por menos de RD$3,000)...",
+                label_visibility="collapsed",
+                key="input_ia"
+            )
+        with col_boton:
+            buscar = st.button("🔍", key="btn_buscar", help="Buscar con IA", use_container_width=True)
+            if buscar and query:
+                st.session_state.busqueda_ia = query
+                reproducir_sonido_ui()
+                st.toast(f"🤖 IA filtrando el catálogo para: '{query}'...", icon="⚡")
+    else:
+        # Vista rápida para el Repartidor
+        st.success("📦 **Radar de Pedidos Activo:** Conectado en tiempo real a la zona centro.")
+
+# Ejecución de la Parte 2
+renderizar_encabezado_y_rol()
+renderizar_barra_busqueda_ia()
+
 # --- 2. SISTEMA DE AUDIO (JS/HTML5) ---
 def play_sfx(audio_url):
     """Inyecta JS para reproducir sonidos de interacción"""
